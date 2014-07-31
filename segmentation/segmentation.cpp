@@ -1,5 +1,5 @@
 #include "segmentation.h"
-#include "contourdetector.h"
+//#include "../contours/contourdetector.h"
 
 using namespace qimp;
 using namespace std;

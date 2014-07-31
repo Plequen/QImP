@@ -15,9 +15,9 @@
 #include <linkedlist.h>
 #include <vec2.h>
 
-#include "segmentation.h"
-#include "contour.h"
-#include "contourdetector.h"
+#include "segmentation/segmentation.h"
+#include "contours/contour.h"
+#include "contours/contourdetector.h"
 
 using namespace std;
 using namespace cv;
