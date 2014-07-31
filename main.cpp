@@ -18,6 +18,7 @@
 #include "segmentation/segmentation.h"
 #include "contours/contour.h"
 #include "contours/contourdetector.h"
+#include "calibration/cameracalibration.h"
 
 using namespace std;
 using namespace cv;
@@ -275,18 +276,7 @@ void multiply(Mat& A, Mat& B, Mat& destination) {
   }
 }
 
-
-int main(int argc, char *argv[]) {
-  if (argc != 2) {
-    cerr << "ERROR: please give the config file as a command line argument." << endl;
-    exit(1);
-  }
-
-  string configFile(argv[1]);
-  if (!initFromConfigFile(configFile))
-    exit(1);
-
-
+int segmentationContoursFingers() {
   cv::initModule_nonfree();
 
   handImage = imread(IMAGES_FOLDER + "hand1.jpg", CV_LOAD_IMAGE_COLOR);
@@ -550,4 +540,78 @@ int main(int argc, char *argv[]) {
   cvWaitKey(0);
 
   return 0;
+}
+
+int calibrationDemo() {
+  bool calibrated = false;
+  int chessRows = 6;
+  int chessCols = 9;
+
+  CameraCalibration calibration(chessRows, chessCols, 2.6 * chessCols);
+
+  Mat image;
+  Mat gray;
+  bool fromVideo = false;
+  int pressedKey = 0;
+
+  int imagesNumber = 11;
+  /*for (int i = 1 ; i <= imagesNumber ; i++) {
+    stringstream filename;
+    filename << IMAGES_FOLDER << i << ".jpg";
+    image = imread(filename.str());*/
+
+  fromVideo = true;
+  int i = 0;
+  VideoCapture videoCapture;
+  //videoCapture.open(VIDEOS_FOLDER + "vid.avi");
+  videoCapture.open(0);
+  videoCapture.set(CV_CAP_PROP_FRAME_WIDTH, 1024);
+  videoCapture.set(CV_CAP_PROP_FRAME_HEIGHT, 768);
+  if (!videoCapture.isOpened())
+    return 1;
+  cout << "Video capture." << endl;
+
+  while (videoCapture.read(image)) {
+
+    if (calibrated) {
+      // do stuff
+
+      imshow("Image", image);
+
+      if ((pressedKey = waitKey(1)) > 0) {
+        if (pressedKey == 27) // escape
+          break;
+      }
+    }
+    else {
+      imshow("Image", image);
+      if ((pressedKey = waitKey(1)) > 0) {
+        if (calibration.feedColorFrame(image, true)) {
+          if (calibration.enoughFrames() || i == imagesNumber) {
+            calibration.calibrate();
+            calibration.saveCalibration(DATA_FOLDER + "calibration.dat");
+            calibrated = true;
+          }
+        }
+      }
+    }
+  }
+
+  return 0;
+}
+
+int main(int argc, char *argv[]) {
+  if (argc != 2) {
+    cerr << "ERROR: please give the config file as a command line argument." << endl;
+    exit(1);
+  }
+
+  string configFile(argv[1]);
+  if (!initFromConfigFile(configFile))
+    exit(1);
+
+
+  //return segmentationContoursFingers();
+  return calibrationDemo();
+
 }
