@@ -1,0 +1,5 @@
+IMAGES ./images/
+VIDEOS ./videos/
+DATA ./data/
+OUTPUT ./output/
+
